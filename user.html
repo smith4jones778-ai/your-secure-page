@@ -16,15 +16,13 @@
   --muted:#64748b;
   --border:#e2e8f0;
   --success:#16a34a;
-  --danger:#dc2626;
 }
 
-/* RESET & BODY */
 *{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Inter,system-ui,Arial;
-  background:linear-gradient(180deg,#eef2ff, #f8fafc);
+  font-family:Inter,system-ui;
+  background:linear-gradient(180deg,#eef2ff,#f8fafc);
   color:var(--text);
 }
 
@@ -33,362 +31,282 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:18px 28px;
-  background:white;
+  padding:16px 28px;
+  background:#fff;
   border-bottom:1px solid var(--border);
-  position:sticky;
-  top:0;
-  z-index:10;
 }
-.title{font-weight:700;font-size:18px}
 .logout{
   background:var(--brand);
-  color:white;
+  color:#fff;
   border:none;
   padding:8px 14px;
   border-radius:8px;
   cursor:pointer;
 }
 
-/* WRAP */
-.wrap{
-  max-width:1200px;
-  margin:auto;
-  padding:25px;
+/* LAYOUT */
+.wrap{max-width:1100px;margin:auto;padding:24px;}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
 }
 
-/* GREETING */
-.greet{
-  margin-bottom:25px;
+/* BUTTONS */
+button.primary{
+  background:var(--brand);
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
 }
-.greet h2{margin:0;font-size:24px}
-.greet p{margin:5px 0 0;color:var(--muted)}
-
-/* GRID */
-.grid{
-  display:grid;
-  gap:18px;
-}
-@media(min-width:900px){
-  .grid-2{grid-template-columns:1fr 1fr}
-  .grid-3{grid-template-columns:1fr 1fr 1fr}
+button.ghost{
+  background:none;
+  border:1px solid var(--border);
+  padding:8px 14px;
+  border-radius:10px;
+  cursor:pointer;
 }
 
 /* CARD */
 .card{
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:12px;
+  border-radius:14px;
   padding:16px;
-  position:relative;
-  overflow:hidden;
-  transition:all .2s ease;
-}
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 15px rgba(0,0,0,.08);
-}
-.card h3{
-  margin-top:0;
-  font-size:18px;
+  margin-bottom:16px;
 }
 
-/* ITEM */
-.item{
-  padding:10px;
-  border:1px solid var(--border);
-  border-radius:8px;
-  margin-bottom:8px;
-  font-size:14px;
-  cursor:pointer;
-  transition:all .2s ease;
+/* FILTERS */
+.filters{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
 }
-.item:hover{background:rgba(37,99,235,.05)}
-.muted{color:var(--muted);font-size:13px}
+.filters input,.filters select{
+  padding:8px;
+  border-radius:10px;
+  border:1px solid var(--border);
+}
+
+/* INQUIRY ITEM */
+.item{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+}
+.badge{
+  font-size:12px;
+  padding:3px 10px;
+  border-radius:20px;
+}
+.open{background:#fee2e2;color:#991b1b}
+.answered{background:#dcfce7;color:#166534}
+
+/* THREAD */
+.thread{margin-top:10px}
+.msg{
+  padding:8px 10px;
+  border-radius:10px;
+  margin-bottom:6px;
+  font-size:14px;
+}
+.user{background:#eef2ff}
+.admin{background:#ecfeff}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.modal.show{display:flex}
+.modal-content{
+  background:#fff;
+  width:100%;
+  max-width:500px;
+  border-radius:14px;
+  padding:18px;
+}
 
 /* FORM */
-textarea,input,select{
+textarea,input{
   width:100%;
   padding:10px;
-  border-radius:8px;
+  border-radius:10px;
   border:1px solid var(--border);
-  margin-bottom:10px;
   font-family:inherit;
+  margin-bottom:10px;
 }
-textarea{height:90px;resize:none;}
-button.primary{
-  background:var(--brand);
-  color:white;
-  border:none;
-  padding:10px;
-  border-radius:8px;
-  cursor:pointer;
-  width:100%;
-  margin-top:8px;
-}
-button.primary:disabled{opacity:.6;cursor:not-allowed}
+textarea{height:90px;resize:none}
 
-/* POPUP */
-.popup{
-  position:fixed;
-  top:20px;
-  right:20px;
-  padding:12px 18px;
-  border-radius:8px;
-  background:var(--brand);
-  color:white;
-  box-shadow:0 5px 20px rgba(0,0,0,.2);
-  opacity:0;
-  pointer-events:none;
-  transition:all .3s ease;
-  z-index:100;
-}
-.popup.show{opacity:1;pointer-events:auto;transform:translateY(0);}
-.popup.success{background:var(--success);}
-.popup.error{background:var(--danger);}
-
-/* EMPTY */
-.empty{
-  color:var(--muted);
-  font-size:14px;
-  text-align:center;
-}
+/* MISC */
+.empty{color:var(--muted);text-align:center;padding:20px}
+.loadmore{text-align:center;margin-top:10px}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <div class="title">Client Area</div>
+  <b>Client Area</b>
   <button class="logout" onclick="logout()">Logout</button>
 </div>
 
 <div class="wrap">
 
-  <div class="greet">
-    <h2 id="hello">Welcome</h2>
-    <p>Here is what is happening today.</p>
+  <div class="topbar">
+    <h2 id="hello">Welcome 👋</h2>
+    <button class="primary" onclick="openModal()">+ New Inquiry</button>
   </div>
 
-  <div class="grid grid-2">
+  <div class="card">
+    <h3>My Inquiries</h3>
 
-    <div class="card">
-      <h3>Notifications</h3>
-      <div id="notes"></div>
+    <div class="filters">
+      <input id="search" placeholder="Search">
+      <select id="status">
+        <option value="">All</option>
+        <option value="open">Open</option>
+        <option value="answered">Answered</option>
+      </select>
     </div>
 
-    <div class="card">
-      <h3>Latest Updates</h3>
-      <div id="updates"></div>
+    <div id="list"></div>
+    <div class="loadmore">
+      <button class="ghost" onclick="loadMore()">Load more</button>
     </div>
-
-    <div class="card">
-      <h3>Resources</h3>
-      <input id="search" placeholder="Search resources">
-      <div id="resources"></div>
-      <button class="primary" onclick="more()">Load More</button>
-    </div>
-
-    <div class="card">
-      <h3>Files</h3>
-      <input id="fileFilter" placeholder="Filter files">
-      <div id="files"></div>
-    </div>
-
-    <div class="card">
-      <h3>Send Inquiry</h3>
-      <textarea id="msg" placeholder="Type your message"></textarea>
-      <button id="sendBtn" class="primary" onclick="send()">Submit</button>
-    </div>
-
-    <div class="card">
-      <h3>My Inquiries</h3>
-      <input id="inqFilter" placeholder="Filter my inquiries">
-      <div id="mine"></div>
-    </div>
-
   </div>
+
 </div>
 
-<div id="popup" class="popup"></div>
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3>New Inquiry</h3>
+    <textarea id="msg" placeholder="Describe your issue"></textarea>
+    <input type="file" id="files" multiple>
+    <button class="primary" onclick="send()">Send</button>
+    <button class="ghost" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCl6RLrInQotd-GYmJ3VtA4wpAHfFltRUg",
-  authDomain: "page-97b26.firebaseapp.com",
-  projectId: "page-97b26",
-  storageBucket: "page-97b26.firebasestorage.app",
-  messagingSenderId: "268450715801",
-  appId: "1:268450715801:web:33732e0f2fc2a69cfa0008"
-};
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp({
+  apiKey:"AIzaSyCl6RLrInQotd-GYmJ3VtA4wpAHfFltRUg",
+  authDomain:"page-97b26.firebaseapp.com",
+  projectId:"page-97b26",
+  storageBucket:"page-97b26.firebasestorage.app"
+});
 
 const auth=firebase.auth();
 const db=firebase.database();
+const storage=firebase.storage();
 const $=id=>document.getElementById(id);
 
-let uid=null;
-let limit=5;
-let resourcesCache=[], filesCache=[], inquiriesCache=[];
+let uid=null, all=[], limit=5;
 
 /* AUTH */
 auth.onAuthStateChanged(async u=>{
   if(!u) return location="index.html";
   uid=u.uid;
-
-  const role=(await db.ref("users/"+uid+"/role").once("value")).val();
-  if(role!=="user") return location="admin.html";
-
   const name=(await db.ref("users/"+uid+"/name").once("value")).val();
-  $("hello").innerText=`Welcome, ${name || "User"} 👋`;
-
-  loadNotes();
-  loadUpdates();
-  loadResources(true);
-  loadMine(true);
-  loadFiles(true);
+  $("hello").innerText=`Welcome, ${name||"User"} 👋`;
+  load();
 });
 
-/* LOGOUT */
-function logout(){auth.signOut();}
+/* MODAL */
+const openModal=()=>$("modal").classList.add("show");
+const closeModal=()=>$("modal").classList.remove("show");
 
-/* POPUP */
-function popup(msg,type="success"){
-  const p=$("popup");
-  p.innerText=msg;
-  p.className=`popup show ${type}`;
-  setTimeout(()=>p.className="popup",3000);
-}
-
-/* NOTIFICATIONS */
-function loadNotes(){
-  const ref=db.ref("notifications/"+uid);
-  ref.limitToLast(20).on("value",s=>{
-    $("notes").innerHTML="";
-    if(!s.exists()) return $("notes").innerHTML='<div class="empty">No new notifications.</div>';
+/* LOAD */
+function load(){
+  db.ref("inquiries").on("value",s=>{
+    all=[];
     s.forEach(c=>{
       const d=c.val();
-      const div=document.createElement("div");
-      div.className="item";
-      div.style.cursor="pointer";
-      div.innerHTML=d.text + `<div class="muted">Tap to dismiss</div>`;
-      div.onclick=()=>{
-        div.style.opacity="0";
-        div.style.transform="translateX(10px)";
-        div.style.transition=".2s";
-        ref.child(c.key).remove();
-        popup("Notification dismissed");
-      };
-      $("notes").appendChild(div);
+      if(d.uid===uid) all.push({...d,id:c.key});
     });
+    render();
   });
 }
 
-/* UPDATES */
-function loadUpdates(){
-  db.ref("updates").limitToLast(10).on("value",s=>{
-    $("updates").innerHTML="";
-    if(!s.exists()) return $("updates").innerHTML='<div class="empty">No updates.</div>';
-    s.forEach(c=>{
-      $("updates").innerHTML+=`<div class="item">${c.val().text}</div>`;
-    });
-  });
-}
-
-/* RESOURCES */
-function loadResources(first=false){
-  if(first){
-    db.ref("resources").on("value",s=>{
-      resourcesCache=[];
-      s.forEach(c=>resourcesCache.push(c.val()));
-      renderResources();
-    });
-  } else renderResources();
-}
-function renderResources(){
+/* RENDER */
+function render(){
   const q=$("search").value.toLowerCase();
-  $("resources").innerHTML="";
-  const list=resourcesCache
-    .filter(r=>!q || r.title.toLowerCase().includes(q))
-    .slice(-limit);
-  if(!list.length) return $("resources").innerHTML='<div class="empty">No resources.</div>';
-  list.forEach(d=>{
-    $("resources").innerHTML+=`
+  const st=$("status").value;
+  $("list").innerHTML="";
+
+  const filtered=all
+    .filter(i=>{
+      const t=i.thread?.[0]?.text||i.message||"";
+      return (!q||t.toLowerCase().includes(q)) && (!st||i.status===st);
+    })
+    .sort((a,b)=>b.createdAt-a.createdAt)
+    .slice(0,limit);
+
+  if(!filtered.length)
+    return $("list").innerHTML='<div class="empty">No inquiries</div>';
+
+  filtered.forEach(i=>{
+    const thread=Array.isArray(i.thread)?i.thread:[
+      {from:"user",text:i.message||"",files:[]},
+      ...(i.response?[{from:"admin",text:i.response,files:[]}]:[])
+    ];
+
+    $("list").innerHTML+=`
       <div class="item">
-        <b>${d.title}</b>
-        <div class="muted">${d.body}</div>
-      </div>`;
+        <span class="badge ${i.status||"open"}">${i.status||"open"}</span>
+        <div class="thread">
+          ${thread.map(m=>`
+            <div class="msg ${m.from}">${m.text}</div>
+          `).join("")}
+        </div>
+      </div>
+    `;
   });
 }
-$("search").addEventListener("input",renderResources);
-function more(){limit+=5;renderResources();}
 
-/* FILES */
-function loadFiles(first=false){
-  if(first){
-    db.ref("files").on("value",s=>{
-      filesCache=[];
-      s.forEach(c=>filesCache.push(c.val()));
-      renderFiles();
-    });
-  } else renderFiles();
-}
-function renderFiles(){
-  const q=$("fileFilter").value.toLowerCase();
-  $("files").innerHTML="";
-  const list=filesCache.filter(f=>!q || f.name.toLowerCase().includes(q));
-  if(!list.length) return $("files").innerHTML='<div class="empty">No files.</div>';
-  list.forEach(d=>{
-    $("files").innerHTML+=`<div class="item"><a href="${d.url}" target="_blank">${d.name}</a></div>`;
-  });
-}
-$("fileFilter").addEventListener("input",renderFiles);
+$("search").oninput=render;
+$("status").onchange=render;
+const loadMore=()=>{limit+=5;render();};
 
-/* SEND INQUIRY */
+/* SEND */
 async function send(){
   const text=$("msg").value.trim();
   if(!text) return;
-  $("sendBtn").disabled=true;
-  await db.ref("inquiries").push({
-    uid,
-    message:text,
-    status:"open",
-    response:"",
-    createdAt:Date.now()
-  });
-  db.ref("analytics/inquiriesCount").transaction(n=>(n||0)+1);
-  $("msg").value="";
-  $("sendBtn").disabled=false;
-  popup("Inquiry submitted");
-}
 
-/* MY INQUIRIES */
-function loadMine(first=false){
-  if(first){
-    db.ref("inquiries").on("value",s=>{
-      inquiriesCache=[];
-      s.forEach(c=>inquiriesCache.push({...c.val(), id:c.key}));
-      renderMine();
-    });
-  } else renderMine();
-}
-function renderMine(){
-  const q=$("inqFilter").value.toLowerCase();
-  $("mine").innerHTML="";
-  const list=inquiriesCache.filter(i=>i.uid===uid && (!q || i.message.toLowerCase().includes(q)));
-  if(!list.length) return $("mine").innerHTML='<div class="empty">No inquiries yet.</div>';
-  list.forEach(d=>{
-    $("mine").innerHTML+=`<div class="item">
-      <b>${d.message}</b><br>
-      ${d.response ? "Reply: "+d.response : '<span class="muted">Pending</span>'}
-    </div>`;
+  const ref=db.ref("inquiries").push();
+  const uploads=[];
+  for(const f of $("files").files){
+    const r=storage.ref(`inquiries/${uid}/${Date.now()}_${f.name}`);
+    await r.put(f);
+    uploads.push({name:f.name,url:await r.getDownloadURL()});
+  }
+
+  await ref.set({
+    uid,
+    status:"open",
+    createdAt:Date.now(),
+    thread:[{from:"user",text,files:uploads}]
   });
+
+  $("msg").value="";
+  $("files").value="";
+  closeModal();
 }
-$("inqFilter").addEventListener("input",renderMine);
+function logout(){auth.signOut();}
 </script>
 
 </body>
