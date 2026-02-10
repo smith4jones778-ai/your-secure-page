@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>User Portal</title>
+
+<style>
+body{font-family:Inter,Arial;margin:20px;max-width:900px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.card{border:1px solid #e5e5e5;border-radius:8px;padding:10px;margin:10px 0}
+input,textarea,button{padding:8px;margin:5px 0}
+textarea{width:100%;height:80px}
+</style>
+</head>
+<body>
+
+<div class="top">
+<h2>User Dashboard</h2>
+<button onclick="logout()">Logout</button>
+</div>
+
+<h3>Notifications</h3>
+<div id="notes"></div>
+
+<h3>Updates</h3>
+<div id="updates"></div>
+
+<h3>Resources</h3>
+<input id="search" placeholder="Search..." oninput="loadResources()">
+<div id="resources"></div>
+<button onclick="more()">Load More</button>
+
+<h3>Files</h3>
+<div id="files"></div>
+
+<h3>Send Inquiry</h3>
+<textarea id="msg"></textarea>
+<button onclick="send()">Submit</button>
+
+<h3>My Inquiries</h3>
+<div id="mine"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCl6RLrInQotd-GYmJ3VtA4wpAHfFltRUg",
+  authDomain: "page-97b26.firebaseapp.com",
+  projectId: "page-97b26",
+  storageBucket: "page-97b26.firebasestorage.app",
+  messagingSenderId: "268450715801",
+  appId: "1:268450715801:web:33732e0f2fc2a69cfa0008"
+};
+firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
+const db=firebase.database();
+
+let limit=5;
+
+auth.onAuthStateChanged(async u=>{
+  if(!u) return location="index.html";
+
+  const role=(await db.ref("users/"+u.uid+"/role").once("value")).val();
+  if(role!=="user") location="admin.html";
+
+  loadNotes(u.uid);
+  loadUpdates();
+  loadResources();
+  loadMine(u.uid);
+  loadFiles();
+});
+
+function logout(){auth.signOut();}
+
+function loadNotes(uid){
+  db.ref("notifications/"+uid).on("value",s=>{
+    notes.innerHTML="";
+    s.forEach(c=>{
+      notes.innerHTML+=`<div class="card">${c.val().text}</div>`;
+    });
+  });
+}
+
+function loadUpdates(){
+  db.ref("updates").limitToLast(10).on("value",s=>{
+    updates.innerHTML="";
+    s.forEach(c=>{
+      updates.innerHTML+=`<div class="card">${c.val().text}</div>`;
+    });
+  });
+}
+
+function loadResources(){
+  const q=search.value.toLowerCase();
+  db.ref("resources").limitToLast(limit).once("value",s=>{
+    resources.innerHTML="";
+    s.forEach(c=>{
+      const d=c.val();
+      if(!q || d.title.toLowerCase().includes(q)){
+        resources.innerHTML+=`<div class="card"><b>${d.title}</b><br>${d.body}</div>`;
+      }
+    });
+  });
+}
+
+function more(){limit+=5;loadResources();}
+
+function send(){
+  if(!msg.value.trim()) return;
+  const u=auth.currentUser;
+
+  db.ref("inquiries").push({
+    uid:u.uid,
+    message:msg.value,
+    status:"open",
+    response:"",
+    createdAt:Date.now()
+  });
+
+  db.ref("analytics/inquiriesCount").transaction(n=>(n||0)+1);
+  msg.value="";
+}
+
+function loadMine(uid){
+  db.ref("inquiries").on("value",s=>{
+    mine.innerHTML="";
+    s.forEach(c=>{
+      const d=c.val();
+      if(d.uid===uid){
+        mine.innerHTML+=`
+          <div class="card">
+            <b>${d.message}</b><br>
+            ${d.response?`Reply: ${d.response}`:"Pending"}
+          </div>`;
+      }
+    });
+  });
+}
+
+function loadFiles(){
+  db.ref("files").on("value",s=>{
+    files.innerHTML="";
+    s.forEach(c=>{
+      const d=c.val();
+      files.innerHTML+=`<div class="card"><a href="${d.url}" target="_blank">${d.name}</a></div>`;
+    });
+  });
+}
+</script>
+
+</body>
+</html>

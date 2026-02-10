@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Access Portal</title>
+<style>
+body{font-family:Inter,Arial;margin:40px;max-width:400px}
+input,button{width:100%;padding:10px;margin:6px 0}
+button{cursor:pointer}
+.err{color:red}
+</style>
+</head>
+<body>
+
+<h2>Secure Login</h2>
+
+<button onclick="google()">Continue with Google</button>
+
+<hr>
+
+<input id="email" placeholder="Email">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<div id="e" class="err"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCl6RLrInQotd-GYmJ3VtA4wpAHfFltRUg",
+  authDomain: "page-97b26.firebaseapp.com",
+  projectId: "page-97b26",
+  storageBucket: "page-97b26.firebasestorage.app",
+  messagingSenderId: "268450715801",
+  appId: "1:268450715801:web:33732e0f2fc2a69cfa0008"
+};
+firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
+const db=firebase.database();
+
+function login(){
+  auth.signInWithEmailAndPassword(email.value,pass.value)
+  .catch(x=>e.innerText=x.message);
+}
+
+function google(){
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+  .catch(x=>e.innerText=x.message);
+}
+
+auth.onAuthStateChanged(async u=>{
+  if(!u) return;
+
+  const usersRef=db.ref("users");
+  const snap=await usersRef.once("value");
+
+  // FIRST USER -> SUPERADMIN
+  if(!snap.exists()){
+    await usersRef.child(u.uid).set({
+      name:u.displayName||"",
+      email:u.email,
+      role:"superadmin",
+      createdAt:Date.now()
+    });
+    return location="admin.html";
+  }
+
+  const r=await db.ref("users/"+u.uid).once("value");
+
+  if(!r.exists()){
+    await db.ref("analytics/usersCount").transaction(n=>(n||0)+1);
+    await db.ref("users/"+u.uid).set({
+      name:u.displayName||"",
+      email:u.email,
+      role:"user",
+      createdAt:Date.now()
+    });
+    return location="user.html";
+  }
+
+  const role=r.val().role;
+  if(role==="user") location="user.html";
+  else location="admin.html";
+});
+</script>
+
+</body>
+</html>
