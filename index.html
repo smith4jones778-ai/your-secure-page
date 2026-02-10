@@ -203,104 +203,125 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const auth=firebase.auth();
-const db=firebase.database();
+const auth = firebase.auth();
+const db   = firebase.database();
 
-function openAuth(){ authModal.style.display="flex"; }
+/* helpers */
+const $ = id => document.getElementById(id);
+
+function openAuth(){ $("authModal").style.display="flex"; }
 
 function friendly(error){
   const m={
     "auth/user-not-found":"Account not found.",
     "auth/wrong-password":"Incorrect password.",
-    "auth/email-already-in-use":"Email already registered."
+    "auth/email-already-in-use":"Email already registered.",
+    "auth/weak-password":"Password should be at least 6 characters."
   };
-  return m[error.code] || "Unable to continue. Please try again.";
+  return m[error.code] || error.message;
 }
 
 function showError(t){
-  msg.style.display="block";
-  msg.innerText=t;
+  const el=$("msg");
+  el.style.display="block";
+  el.innerText=t;
 }
 
-/* EMAIL LOGIN */
+/* LOGIN */
 function login(){
-  auth.signInWithEmailAndPassword(email.value,pass.value)
-  .catch(e=>showError(friendly(e)));
+  showError("");
+  auth.signInWithEmailAndPassword(
+    $("email").value.trim(),
+    $("pass").value.trim()
+  ).catch(e=>showError(friendly(e)));
 }
 
 /* SIGNUP */
 function signup(){
-  auth.createUserWithEmailAndPassword(email.value,pass.value)
-  .catch(e=>showError(friendly(e)));
+  showError("");
+  auth.createUserWithEmailAndPassword(
+    $("email").value.trim(),
+    $("pass").value.trim()
+  ).catch(e=>showError(friendly(e)));
 }
 
-/* GOOGLE REDIRECT */
+/* GOOGLE */
 function google(){
   const provider=new firebase.auth.GoogleAuthProvider();
   auth.signInWithRedirect(provider);
 }
 
+/* avoid duplicate handling */
+auth.getRedirectResult().catch(()=>{});
+
 let currentUser=null;
 
-/* HANDLE REDIRECT RESULT */
-auth.getRedirectResult().then(()=>{}).catch(()=>{});
-
-/* SESSION */
+/* AUTH STATE */
 auth.onAuthStateChanged(async u=>{
   if(!u) return;
 
   currentUser=u;
-  authModal.style.display="none";
+  $("authModal").style.display="none";
 
-  const usersRef=db.ref("users");
-  const all=await usersRef.once("value");
+  const userRef=db.ref("users/"+u.uid);
+  const snap=await userRef.once("value");
 
-  if(!all.exists()){
-    await usersRef.child(u.uid).set({
+  /* existing user */
+  if(snap.exists()){
+    return route(snap.val().role);
+  }
+
+  /* first ever account -> super admin */
+  const countSnap = await db.ref("users").limitToFirst(1).once("value");
+  if(!countSnap.exists()){
+    await userRef.set({
       name:u.displayName||"",
       email:u.email,
       role:"superadmin",
       createdAt:Date.now()
     });
-    return location="admin.html";
+    return route("admin");
   }
 
-  const snap=await db.ref("users/"+u.uid).once("value");
-
-  if(!snap.exists()){
-    profileModal.style.display="flex";
-    return;
-  }
-
-  route(snap.val().role);
+  /* otherwise collect profile */
+  $("profileModal").style.display="flex";
 });
 
-function saveProfile(){
-  if(!name.value || !location.value){
+/* SAVE PROFILE */
+async function saveProfile(){
+  if(!currentUser) return alert("Session not ready.");
+
+  const data={
+    name:$("name").value.trim(),
+    email:currentUser.email,
+    phone:$("phone").value.trim(),
+    location:$("location").value.trim(),
+    gender:$("gender").value,
+    role:"user",
+    createdAt:Date.now()
+  };
+
+  if(!data.name || !data.location){
     alert("Please complete required fields.");
     return;
   }
 
-  db.ref("analytics/usersCount").transaction(n=>(n||0)+1);
-
-  db.ref("users/"+currentUser.uid).set({
-    name:name.value,
-    email:currentUser.email,
-    phone:phone.value,
-    location:location.value,
-    gender:gender.value,
-    role:"user",
-    createdAt:Date.now()
-  });
-
-  route("user");
+  try{
+    await db.ref("users/"+currentUser.uid).set(data);
+    await db.ref("analytics/usersCount").transaction(n=>(n||0)+1);
+    route("user");
+  }catch(e){
+    alert("Save failed: "+e.message);
+  }
 }
 
+/* ROUTE */
 function route(role){
-  if(role==="user") location="user.html";
-  else location="admin.html";
+  if(role==="superadmin" || role==="admin") location="admin.html";
+  else location="user.html";
 }
 </script>
+
 
 </body>
 </html>
