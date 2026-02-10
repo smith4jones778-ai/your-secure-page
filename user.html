@@ -1,45 +1,216 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>User Portal</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
-body{font-family:Inter,Arial;margin:20px;max-width:900px}
-.top{display:flex;justify-content:space-between;align-items:center}
-.card{border:1px solid #e5e5e5;border-radius:8px;padding:10px;margin:10px 0}
-input,textarea,button{padding:8px;margin:5px 0}
-textarea{width:100%;height:80px}
+:root{
+  --brand:#2563eb;
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e2e8f0;
+  --success:#16a34a;
+  --danger:#dc2626;
+}
+
+/* RESET & BODY */
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui,Arial;
+  background:linear-gradient(180deg,#eef2ff, #f8fafc);
+  color:var(--text);
+}
+
+/* HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 28px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.title{font-weight:700;font-size:18px}
+.logout{
+  background:var(--brand);
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* WRAP */
+.wrap{
+  max-width:1200px;
+  margin:auto;
+  padding:25px;
+}
+
+/* GREETING */
+.greet{
+  margin-bottom:25px;
+}
+.greet h2{margin:0;font-size:24px}
+.greet p{margin:5px 0 0;color:var(--muted)}
+
+/* GRID */
+.grid{
+  display:grid;
+  gap:18px;
+}
+@media(min-width:900px){
+  .grid-2{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:1fr 1fr 1fr}
+}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  position:relative;
+  overflow:hidden;
+  transition:all .2s ease;
+}
+.card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 15px rgba(0,0,0,.08);
+}
+.card h3{
+  margin-top:0;
+  font-size:18px;
+}
+
+/* ITEM */
+.item{
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-bottom:8px;
+  font-size:14px;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+.item:hover{background:rgba(37,99,235,.05)}
+.muted{color:var(--muted);font-size:13px}
+
+/* FORM */
+textarea,input,select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  margin-bottom:10px;
+  font-family:inherit;
+}
+textarea{height:90px;resize:none;}
+button.primary{
+  background:var(--brand);
+  color:white;
+  border:none;
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+  width:100%;
+  margin-top:8px;
+}
+button.primary:disabled{opacity:.6;cursor:not-allowed}
+
+/* POPUP */
+.popup{
+  position:fixed;
+  top:20px;
+  right:20px;
+  padding:12px 18px;
+  border-radius:8px;
+  background:var(--brand);
+  color:white;
+  box-shadow:0 5px 20px rgba(0,0,0,.2);
+  opacity:0;
+  pointer-events:none;
+  transition:all .3s ease;
+  z-index:100;
+}
+.popup.show{opacity:1;pointer-events:auto;transform:translateY(0);}
+.popup.success{background:var(--success);}
+.popup.error{background:var(--danger);}
+
+/* EMPTY */
+.empty{
+  color:var(--muted);
+  font-size:14px;
+  text-align:center;
+}
 </style>
 </head>
+
 <body>
 
-<div class="top">
-<h2>User Dashboard</h2>
-<button onclick="logout()">Logout</button>
+<div class="header">
+  <div class="title">Client Area</div>
+  <button class="logout" onclick="logout()">Logout</button>
 </div>
 
-<h3>Notifications</h3>
-<div id="notes"></div>
+<div class="wrap">
 
-<h3>Updates</h3>
-<div id="updates"></div>
+  <div class="greet">
+    <h2 id="hello">Welcome</h2>
+    <p>Here is what is happening today.</p>
+  </div>
 
-<h3>Resources</h3>
-<input id="search" placeholder="Search..." oninput="loadResources()">
-<div id="resources"></div>
-<button onclick="more()">Load More</button>
+  <div class="grid grid-2">
 
-<h3>Files</h3>
-<div id="files"></div>
+    <div class="card">
+      <h3>Notifications</h3>
+      <div id="notes"></div>
+    </div>
 
-<h3>Send Inquiry</h3>
-<textarea id="msg"></textarea>
-<button onclick="send()">Submit</button>
+    <div class="card">
+      <h3>Latest Updates</h3>
+      <div id="updates"></div>
+    </div>
 
-<h3>My Inquiries</h3>
-<div id="mine"></div>
+    <div class="card">
+      <h3>Resources</h3>
+      <input id="search" placeholder="Search resources">
+      <div id="resources"></div>
+      <button class="primary" onclick="more()">Load More</button>
+    </div>
+
+    <div class="card">
+      <h3>Files</h3>
+      <input id="fileFilter" placeholder="Filter files">
+      <div id="files"></div>
+    </div>
+
+    <div class="card">
+      <h3>Send Inquiry</h3>
+      <textarea id="msg" placeholder="Type your message"></textarea>
+      <button id="sendBtn" class="primary" onclick="send()">Submit</button>
+    </div>
+
+    <div class="card">
+      <h3>My Inquiries</h3>
+      <input id="inqFilter" placeholder="Filter my inquiries">
+      <div id="mine"></div>
+    </div>
+
+  </div>
+</div>
+
+<div id="popup" class="popup"></div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -58,98 +229,166 @@ firebase.initializeApp(firebaseConfig);
 
 const auth=firebase.auth();
 const db=firebase.database();
+const $=id=>document.getElementById(id);
 
+let uid=null;
 let limit=5;
+let resourcesCache=[], filesCache=[], inquiriesCache=[];
 
+/* AUTH */
 auth.onAuthStateChanged(async u=>{
   if(!u) return location="index.html";
+  uid=u.uid;
 
-  const role=(await db.ref("users/"+u.uid+"/role").once("value")).val();
-  if(role!=="user") location="admin.html";
+  const role=(await db.ref("users/"+uid+"/role").once("value")).val();
+  if(role!=="user") return location="admin.html";
 
-  loadNotes(u.uid);
+  const name=(await db.ref("users/"+uid+"/name").once("value")).val();
+  $("hello").innerText=`Welcome, ${name || "User"} 👋`;
+
+  loadNotes();
   loadUpdates();
-  loadResources();
-  loadMine(u.uid);
-  loadFiles();
+  loadResources(true);
+  loadMine(true);
+  loadFiles(true);
 });
 
+/* LOGOUT */
 function logout(){auth.signOut();}
 
-function loadNotes(uid){
-  db.ref("notifications/"+uid).on("value",s=>{
-    notes.innerHTML="";
-    s.forEach(c=>{
-      notes.innerHTML+=`<div class="card">${c.val().text}</div>`;
-    });
-  });
+/* POPUP */
+function popup(msg,type="success"){
+  const p=$("popup");
+  p.innerText=msg;
+  p.className=`popup show ${type}`;
+  setTimeout(()=>p.className="popup",3000);
 }
 
-function loadUpdates(){
-  db.ref("updates").limitToLast(10).on("value",s=>{
-    updates.innerHTML="";
-    s.forEach(c=>{
-      updates.innerHTML+=`<div class="card">${c.val().text}</div>`;
-    });
-  });
-}
-
-function loadResources(){
-  const q=search.value.toLowerCase();
-  db.ref("resources").limitToLast(limit).once("value",s=>{
-    resources.innerHTML="";
+/* NOTIFICATIONS */
+function loadNotes(){
+  const ref=db.ref("notifications/"+uid);
+  ref.limitToLast(20).on("value",s=>{
+    $("notes").innerHTML="";
+    if(!s.exists()) return $("notes").innerHTML='<div class="empty">No new notifications.</div>';
     s.forEach(c=>{
       const d=c.val();
-      if(!q || d.title.toLowerCase().includes(q)){
-        resources.innerHTML+=`<div class="card"><b>${d.title}</b><br>${d.body}</div>`;
-      }
+      const div=document.createElement("div");
+      div.className="item";
+      div.style.cursor="pointer";
+      div.innerHTML=d.text + `<div class="muted">Tap to dismiss</div>`;
+      div.onclick=()=>{
+        div.style.opacity="0";
+        div.style.transform="translateX(10px)";
+        div.style.transition=".2s";
+        ref.child(c.key).remove();
+        popup("Notification dismissed");
+      };
+      $("notes").appendChild(div);
     });
   });
 }
 
-function more(){limit+=5;loadResources();}
+/* UPDATES */
+function loadUpdates(){
+  db.ref("updates").limitToLast(10).on("value",s=>{
+    $("updates").innerHTML="";
+    if(!s.exists()) return $("updates").innerHTML='<div class="empty">No updates.</div>';
+    s.forEach(c=>{
+      $("updates").innerHTML+=`<div class="item">${c.val().text}</div>`;
+    });
+  });
+}
 
-function send(){
-  if(!msg.value.trim()) return;
-  const u=auth.currentUser;
+/* RESOURCES */
+function loadResources(first=false){
+  if(first){
+    db.ref("resources").on("value",s=>{
+      resourcesCache=[];
+      s.forEach(c=>resourcesCache.push(c.val()));
+      renderResources();
+    });
+  } else renderResources();
+}
+function renderResources(){
+  const q=$("search").value.toLowerCase();
+  $("resources").innerHTML="";
+  const list=resourcesCache
+    .filter(r=>!q || r.title.toLowerCase().includes(q))
+    .slice(-limit);
+  if(!list.length) return $("resources").innerHTML='<div class="empty">No resources.</div>';
+  list.forEach(d=>{
+    $("resources").innerHTML+=`
+      <div class="item">
+        <b>${d.title}</b>
+        <div class="muted">${d.body}</div>
+      </div>`;
+  });
+}
+$("search").addEventListener("input",renderResources);
+function more(){limit+=5;renderResources();}
 
-  db.ref("inquiries").push({
-    uid:u.uid,
-    message:msg.value,
+/* FILES */
+function loadFiles(first=false){
+  if(first){
+    db.ref("files").on("value",s=>{
+      filesCache=[];
+      s.forEach(c=>filesCache.push(c.val()));
+      renderFiles();
+    });
+  } else renderFiles();
+}
+function renderFiles(){
+  const q=$("fileFilter").value.toLowerCase();
+  $("files").innerHTML="";
+  const list=filesCache.filter(f=>!q || f.name.toLowerCase().includes(q));
+  if(!list.length) return $("files").innerHTML='<div class="empty">No files.</div>';
+  list.forEach(d=>{
+    $("files").innerHTML+=`<div class="item"><a href="${d.url}" target="_blank">${d.name}</a></div>`;
+  });
+}
+$("fileFilter").addEventListener("input",renderFiles);
+
+/* SEND INQUIRY */
+async function send(){
+  const text=$("msg").value.trim();
+  if(!text) return;
+  $("sendBtn").disabled=true;
+  await db.ref("inquiries").push({
+    uid,
+    message:text,
     status:"open",
     response:"",
     createdAt:Date.now()
   });
-
   db.ref("analytics/inquiriesCount").transaction(n=>(n||0)+1);
-  msg.value="";
+  $("msg").value="";
+  $("sendBtn").disabled=false;
+  popup("Inquiry submitted");
 }
 
-function loadMine(uid){
-  db.ref("inquiries").on("value",s=>{
-    mine.innerHTML="";
-    s.forEach(c=>{
-      const d=c.val();
-      if(d.uid===uid){
-        mine.innerHTML+=`
-          <div class="card">
-            <b>${d.message}</b><br>
-            ${d.response?`Reply: ${d.response}`:"Pending"}
-          </div>`;
-      }
+/* MY INQUIRIES */
+function loadMine(first=false){
+  if(first){
+    db.ref("inquiries").on("value",s=>{
+      inquiriesCache=[];
+      s.forEach(c=>inquiriesCache.push({...c.val(), id:c.key}));
+      renderMine();
     });
+  } else renderMine();
+}
+function renderMine(){
+  const q=$("inqFilter").value.toLowerCase();
+  $("mine").innerHTML="";
+  const list=inquiriesCache.filter(i=>i.uid===uid && (!q || i.message.toLowerCase().includes(q)));
+  if(!list.length) return $("mine").innerHTML='<div class="empty">No inquiries yet.</div>';
+  list.forEach(d=>{
+    $("mine").innerHTML+=`<div class="item">
+      <b>${d.message}</b><br>
+      ${d.response ? "Reply: "+d.response : '<span class="muted">Pending</span>'}
+    </div>`;
   });
 }
-
-function loadFiles(){
-  db.ref("files").on("value",s=>{
-    files.innerHTML="";
-    s.forEach(c=>{
-      const d=c.val();
-      files.innerHTML+=`<div class="card"><a href="${d.url}" target="_blank">${d.name}</a></div>`;
-    });
-  });
-}
+$("inqFilter").addEventListener("input",renderMine);
 </script>
 
 </body>
