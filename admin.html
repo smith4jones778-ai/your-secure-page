@@ -1,41 +1,176 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Control</title>
+<title>Admin Portal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body{font-family:Inter,Arial;margin:20px;max-width:1100px}
-.top{display:flex;justify-content:space-between}
-.card{border:1px solid #e5e5e5;border-radius:8px;padding:10px;margin:10px 0}
-textarea,input,select,button{padding:8px;margin:5px 0}
-textarea{width:100%;height:70px}
+:root{
+  --brand:#2563eb;
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e2e8f0;
+  --success:#16a34a;
+  --danger:#dc2626;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui,Arial;
+  background:linear-gradient(180deg,#eef2ff,#f8fafc);
+  color:var(--text);
+}
+/* HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 28px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.title{font-weight:700}
+.logout{
+  background:var(--brand);
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* WRAP */
+.wrap{max-width:1200px;margin:auto;padding:25px;}
+
+/* GREETING */
+.greet h2{margin:0}
+.greet p{margin:5px 0 0;color:var(--muted)}
+
+/* GRID */
+.grid{display:grid;gap:18px}
+@media(min-width:1000px){.grid-2{grid-template-columns:1fr 1fr}}
+@media(min-width:1400px){.grid-2{grid-template-columns:1fr 1fr 1fr}}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  overflow:hidden;
+}
+.card h3{margin-top:0;font-size:16px}
+
+/* ITEM */
+.item{
+  border:1px solid var(--border);
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:8px;
+  font-size:14px;
+}
+
+/* FORM */
+textarea,input,select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  margin-top:6px;
+  font-family:inherit;
+}
+button.primary{background:var(--brand);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:8px;}
+button.danger{background:var(--danger);color:white;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;}
+button.small{padding:6px 10px;font-size:13px;}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:var(--success);
+  color:white;
+  padding:12px 16px;
+  border-radius:10px;
+  box-shadow:0 10px 20px rgba(0,0,0,0.15);
+  opacity:0;
+  transform:translateY(10px);
+  transition:.25s;
+}
+.toast.show{opacity:1;transform:none}
+
+.muted{color:var(--muted);font-size:13px}
+.empty{color:var(--muted);font-size:14px}
 </style>
 </head>
-<body>
 
-<div class="top">
-<h2>Admin Dashboard</h2>
-<button onclick="logout()">Logout</button>
+<body>
+<div class="header">
+  <div class="title">Administration</div>
+  <button class="logout" onclick="logout()">Logout</button>
 </div>
 
-<h3>Analytics</h3>
-<div id="stats"></div>
+<div class="wrap">
+  <div class="greet">
+    <h2 id="hello">Welcome 👋</h2>
+    <p>Manage platform activity and client communication.</p>
+  </div>
 
-<h3>Post Update</h3>
-<textarea id="up"></textarea>
-<button onclick="postUpdate()">Publish</button>
+  <div class="grid grid-2">
 
-<h3>Upload File</h3>
-<input type="file" id="file">
-<button onclick="upload()">Upload</button>
+    <!-- ANALYTICS -->
+    <div class="card">
+      <h3>Analytics</h3>
+      <div id="stats"></div>
+    </div>
 
-<h3>Users</h3>
-<div id="users"></div>
+    <!-- POST UPDATE -->
+    <div class="card">
+      <h3>Post Update</h3>
+      <textarea id="up" placeholder="Write announcement"></textarea>
+      <button class="primary" onclick="postUpdate()">Publish</button>
+    </div>
 
-<h3>Inquiries</h3>
-<div id="inq"></div>
+    <!-- FILE UPLOAD -->
+    <div class="card">
+      <h3>Upload File</h3>
+      <input type="file" id="file">
+      <button class="primary" onclick="upload()">Upload</button>
+    </div>
+
+    <!-- USERS -->
+    <div class="card">
+      <h3>Users</h3>
+      <input id="userFilter" placeholder="Search users by name/email">
+      <div id="users"></div>
+    </div>
+
+    <!-- INQUIRIES -->
+    <div class="card" style="grid-column:1/-1">
+      <h3>Inquiries</h3>
+      <select id="inqUserFilter">
+        <option value="">All Users</option>
+      </select>
+      <select id="inqStatusFilter">
+        <option value="">All Status</option>
+        <option value="open">Open</option>
+        <option value="answered">Answered</option>
+      </select>
+      <div id="inq"></div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast">Done</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -56,113 +191,161 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.database();
 const storage=firebase.storage();
+const $=id=>document.getElementById(id);
 
 let myRole="";
+let myName="Admin";
+let usersCache=[], inquiriesCache=[];
 
+/* AUTH */
 auth.onAuthStateChanged(async u=>{
   if(!u) return location="index.html";
-
   myRole=(await db.ref("users/"+u.uid+"/role").once("value")).val();
-  if(myRole==="user") location="user.html";
+  if(myRole==="user") return location="user.html";
+  myName=(await db.ref("users/"+u.uid+"/name").once("value")).val()||"Admin";
+  $("hello").innerText=`Welcome, ${myName} 👋`;
 
   loadStats();
   loadUsers();
-  loadInq();
+  loadInquiries();
 });
 
+/* LOGOUT */
 function logout(){auth.signOut();}
 
+/* TOAST */
+function toast(t="Action completed"){
+  $("toast").innerText=t;
+  $("toast").classList.add("show");
+  setTimeout(()=>$("toast").classList.remove("show"),2500);
+}
+
+/* ANALYTICS */
 function loadStats(){
   db.ref("analytics").on("value",s=>{
     const d=s.val()||{};
-    stats.innerHTML=`
-      <div class="card">Users: ${d.usersCount||0}</div>
-      <div class="card">Inquiries: ${d.inquiriesCount||0}</div>
+    $("stats").innerHTML=`
+      <div class="item">Users: ${d.usersCount||0}</div>
+      <div class="item">Inquiries: ${d.inquiriesCount||0}</div>
     `;
   });
 }
 
+/* POST UPDATE */
 function postUpdate(){
-  if(!up.value.trim()) return;
-  db.ref("updates").push({text:up.value,createdAt:Date.now()});
-  up.value="";
+  const text=$("up").value.trim();
+  if(!text) return;
+  db.ref("updates").push({text,createdAt:Date.now()});
+  $("up").value="";
+  toast("Update published");
 }
 
+/* FILE UPLOAD */
 function upload(){
-  const f=file.files[0];
+  const f=$("file").files[0];
   if(!f) return;
-
   const ref=storage.ref("files/"+Date.now()+"_"+f.name);
   ref.put(f).then(()=>ref.getDownloadURL()).then(url=>{
     db.ref("files").push({name:f.name,url,createdAt:Date.now()});
+    toast("File uploaded");
   });
 }
 
+/* USERS */
 function loadUsers(){
   db.ref("users").on("value",s=>{
-    users.innerHTML="";
+    usersCache=[];
+    $("users").innerHTML="";
+    $("inqUserFilter").innerHTML=`<option value="">All Users</option>`;
+    if(!s.exists()) return $("users").innerHTML='<div class="empty">No users.</div>';
     s.forEach(c=>{
       const d=c.val();
-      users.innerHTML+=`
-      <div class="card">
-        ${d.name||""} (${d.email}) 
-        <br>Role:
-        <select onchange="role('${c.key}',this.value)">
-          <option ${d.role==="user"?"selected":""}>user</option>
-          <option ${d.role==="admin"?"selected":""}>admin</option>
-          <option ${d.role==="superadmin"?"selected":""}>superadmin</option>
-        </select>
-        ${myRole==="superadmin"?`<button onclick="delUser('${c.key}')">Delete</button>`:""}
-        <button onclick="notify('${c.key}')">Notify</button>
-      </div>`;
-    });
-  });
-}
-
-function role(uid,r){
-  if(myRole!=="superadmin") return;
-  db.ref("users/"+uid+"/role").set(r);
-}
-
-function delUser(uid){
-  if(myRole!=="superadmin") return;
-
-  db.ref("users/"+uid).remove();
-
-  db.ref("inquiries").once("value",s=>{
-    s.forEach(c=>{
-      if(c.val().uid===uid) db.ref("inquiries/"+c.key).remove();
-    });
-  });
-}
-
-function notify(uid){
-  const text=prompt("Message");
-  if(!text) return;
-  db.ref("notifications/"+uid).push({text,createdAt:Date.now()});
-}
-
-function loadInq(){
-  db.ref("inquiries").on("value",s=>{
-    inq.innerHTML="";
-    s.forEach(c=>{
-      const d=c.val();
-      inq.innerHTML+=`
-        <div class="card">
-          ${d.message}
-          <textarea id="r${c.key}">${d.response||""}</textarea>
-          <button onclick="reply('${c.key}','${d.uid}')">Send</button>
+      usersCache.push({id:c.key,...d});
+      $("users").innerHTML+=`
+        <div class="item">
+          <b>${d.name||"No name"}</b>
+          <div class="muted">${d.email}</div>
+          <select ${myRole!=="superadmin"?"disabled":""} onchange="role('${c.key}',this.value)">
+            <option ${d.role==="user"?"selected":""}>user</option>
+            <option ${d.role==="admin"?"selected":""}>admin</option>
+            <option ${d.role==="superadmin"?"selected":""}>superadmin</option>
+          </select>
+          <div style="margin-top:8px">
+            <button class="primary small" onclick="notify('${c.key}')">Notify</button>
+            ${myRole==="superadmin"? `<button class="danger small" onclick="delUser('${c.key}')">Delete</button>`:``}
+          </div>
         </div>`;
+      $("inqUserFilter").innerHTML+=`<option value="${c.key}">${d.name||d.email}</option>`;
     });
+  });
+
+  $("userFilter").addEventListener("input",()=>renderUsers($("userFilter").value.toLowerCase()));
+}
+
+function renderUsers(q=""){
+  $("users").innerHTML="";
+  usersCache.forEach(d=>{
+    if(!q || d.name.toLowerCase().includes(q)||d.email.toLowerCase().includes(q)){
+      $("users").innerHTML+=`
+        <div class="item">
+          <b>${d.name||"No name"}</b>
+          <div class="muted">${d.email}</div>
+          <select ${myRole!=="superadmin"?"disabled":""} onchange="role('${d.id}',this.value)">
+            <option ${d.role==="user"?"selected":""}>user</option>
+            <option ${d.role==="admin"?"selected":""}>admin</option>
+            <option ${d.role==="superadmin"?"selected":""}>superadmin</option>
+          </select>
+          <div style="margin-top:8px">
+            <button class="primary small" onclick="notify('${d.id}')">Notify</button>
+            ${myRole==="superadmin"? `<button class="danger small" onclick="delUser('${d.id}')">Delete</button>`:``}
+          </div>
+        </div>`;
+    }
+  });
+}
+
+/* USER ACTIONS */
+function role(uid,r){ if(myRole!=="superadmin") return; db.ref("users/"+uid+"/role").set(r); toast("Role updated"); }
+function delUser(uid){ if(myRole!=="superadmin") return; if(!confirm("Delete this user and data?")) return; db.ref("users/"+uid).remove(); db.ref("inquiries").once("value",s=>{s.forEach(c=>{if(c.val().uid===uid) db.ref("inquiries/"+c.key).remove();});}); toast("User removed"); }
+function notify(uid){ const text=prompt("Notification message"); if(!text) return; db.ref("notifications/"+uid).push({text,createdAt:Date.now()}); toast("User notified"); }
+
+/* INQUIRIES */
+function loadInquiries(){
+  db.ref("inquiries").on("value",s=>{
+    inquiriesCache=[];
+    s.forEach(c=>inquiriesCache.push({...c.val(),id:c.key}));
+    renderInquiries();
+  });
+
+  $("inqUserFilter").addEventListener("change",renderInquiries);
+  $("inqStatusFilter").addEventListener("change",renderInquiries);
+}
+
+function renderInquiries(){
+  const uid=$("inqUserFilter").value;
+  const status=$("inqStatusFilter").value;
+  $("inq").innerHTML="";
+  const filtered=inquiriesCache.filter(i=>{
+    return (!uid || i.uid===uid) && (!status || i.status===status);
+  });
+  if(!filtered.length) return $("inq").innerHTML='<div class="empty">No inquiries.</div>';
+  filtered.forEach(d=>{
+    $("inq").innerHTML+=`
+      <div class="item">
+        <b>${d.message}</b>
+        <div class="muted">Status: ${d.status||"open"}</div>
+        <textarea id="r${d.id}" placeholder="Write reply">${d.response||""}</textarea>
+        <button class="primary small" onclick="reply('${d.id}','${d.uid}')">Send Reply</button>
+      </div>`;
   });
 }
 
 function reply(id,uid){
   const v=document.getElementById("r"+id).value;
   db.ref("inquiries/"+id).update({response:v,status:"answered"});
-  db.ref("notifications/"+uid).push({text:"Your inquiry has a reply.",createdAt:Date.now()});
+  db.ref("notifications/"+uid).push({text:"Your inquiry has been answered.",createdAt:Date.now()});
+  toast("Reply sent & user alerted");
 }
 </script>
-
 </body>
 </html>
