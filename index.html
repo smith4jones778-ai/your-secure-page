@@ -1,29 +1,174 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Access Portal</title>
+<title>Client Access Portal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-body{font-family:Inter,Arial;margin:40px;max-width:400px}
-input,button{width:100%;padding:10px;margin:6px 0}
-button{cursor:pointer}
-.err{color:red}
+:root{
+  --brand:#2563eb;
+  --dark:#0f172a;
+  --muted:#64748b;
+  --border:#e5e7eb;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui,Arial;
+  color:var(--dark);
+  background:#f8fafc;
+}
+
+/* HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 40px;
+  background:white;
+  border-bottom:1px solid var(--border);
+}
+.logo{font-weight:700;font-size:20px}
+.login-btn{
+  background:var(--brand);
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* HERO */
+.hero{
+  padding:70px 40px;
+  text-align:center;
+  max-width:900px;
+  margin:auto;
+}
+.hero h1{
+  font-size:40px;
+  margin-bottom:15px;
+}
+.hero p{
+  color:var(--muted);
+  font-size:18px;
+}
+
+/* FEATURES */
+.features{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+  padding:40px;
+  max-width:1000px;
+  margin:auto;
+}
+.card{
+  background:white;
+  border:1px solid var(--border);
+  padding:20px;
+  border-radius:12px;
+}
+
+/* FOOTER */
+.footer{
+  margin-top:50px;
+  padding:30px;
+  text-align:center;
+  background:white;
+  border-top:1px solid var(--border);
+  color:var(--muted);
+}
+
+/* AUTH MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.box{
+  background:white;
+  width:400px;
+  padding:20px;
+  border-radius:12px;
+}
+input,select,button{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+}
+.google{
+  background:#db4437;
+  color:white;
+  border:none;
+}
+.save{
+  background:var(--brand);
+  color:white;
+  border:none;
+}
+.err{color:red;font-size:14px}
 </style>
 </head>
+
 <body>
 
-<h2>Secure Login</h2>
+<header class="header">
+  <div class="logo">Service Portal</div>
+  <button class="login-btn" onclick="openLogin()">Client Login</button>
+</header>
 
-<button onclick="google()">Continue with Google</button>
+<section class="hero">
+  <h1>Secure Client Service Platform</h1>
+  <p>
+    Access resources, submit inquiries, receive responses,
+    and stay informed through your dedicated account.
+  </p>
+</section>
 
-<hr>
+<section class="features">
+  <div class="card"><b>Fast Support</b><br>Send inquiries and receive tracked responses.</div>
+  <div class="card"><b>Resource Library</b><br>Download important documents anytime.</div>
+  <div class="card"><b>Live Updates</b><br>See announcements instantly.</div>
+  <div class="card"><b>Secure Access</b><br>Protected with Google authentication.</div>
+</section>
 
-<input id="email" placeholder="Email">
-<input id="pass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
+<footer class="footer">
+  © 2026 Service Portal • Privacy • Terms • Support
+</footer>
 
-<div id="e" class="err"></div>
+<!-- LOGIN -->
+<div class="modal" id="loginModal">
+  <div class="box">
+    <h3>Login</h3>
+    <button class="google" onclick="google()">Continue with Google</button>
+    <div id="err" class="err"></div>
+  </div>
+</div>
+
+<!-- PROFILE COLLECTION -->
+<div class="modal" id="profileModal">
+  <div class="box">
+    <h3>Complete Your Profile</h3>
+
+    <input id="name" placeholder="Full name">
+    <input id="phone" placeholder="Phone number">
+    <input id="location" placeholder="City / Country">
+    <select id="gender">
+      <option value="">Gender</option>
+      <option>Male</option>
+      <option>Female</option>
+    </select>
+
+    <button class="save" onclick="saveProfile()">Save & Continue</button>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -38,29 +183,32 @@ const firebaseConfig = {
   messagingSenderId: "268450715801",
   appId: "1:268450715801:web:33732e0f2fc2a69cfa0008"
 };
+
 firebase.initializeApp(firebaseConfig);
 
 const auth=firebase.auth();
 const db=firebase.database();
 
-function login(){
-  auth.signInWithEmailAndPassword(email.value,pass.value)
-  .catch(x=>e.innerText=x.message);
-}
+function openLogin(){ loginModal.style.display="flex"; }
 
 function google(){
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-  .catch(x=>e.innerText=x.message);
+  .catch(e=>err.innerText=e.message);
 }
+
+let pendingUser=null;
 
 auth.onAuthStateChanged(async u=>{
   if(!u) return;
 
-  const usersRef=db.ref("users");
-  const snap=await usersRef.once("value");
+  pendingUser=u;
+  loginModal.style.display="none";
 
-  // FIRST USER -> SUPERADMIN
-  if(!snap.exists()){
+  const usersRef=db.ref("users");
+  const all=await usersRef.once("value");
+
+  // first ever user
+  if(!all.exists()){
     await usersRef.child(u.uid).set({
       name:u.displayName||"",
       email:u.email,
@@ -70,23 +218,39 @@ auth.onAuthStateChanged(async u=>{
     return location="admin.html";
   }
 
-  const r=await db.ref("users/"+u.uid).once("value");
+  const snap=await db.ref("users/"+u.uid).once("value");
 
-  if(!r.exists()){
-    await db.ref("analytics/usersCount").transaction(n=>(n||0)+1);
-    await db.ref("users/"+u.uid).set({
-      name:u.displayName||"",
-      email:u.email,
-      role:"user",
-      createdAt:Date.now()
-    });
-    return location="user.html";
+  // new user -> collect profile
+  if(!snap.exists()){
+    profileModal.style.display="flex";
+    return;
   }
 
-  const role=r.val().role;
+  route(snap.val().role);
+});
+
+function saveProfile(){
+  if(!name.value || !location.value) return;
+
+  db.ref("analytics/usersCount").transaction(n=>(n||0)+1);
+
+  db.ref("users/"+pendingUser.uid).set({
+    name:name.value,
+    email:pendingUser.email,
+    phone:phone.value,
+    location:location.value,
+    gender:gender.value,
+    role:"user",
+    createdAt:Date.now()
+  });
+
+  route("user");
+}
+
+function route(role){
   if(role==="user") location="user.html";
   else location="admin.html";
-});
+}
 </script>
 
 </body>
