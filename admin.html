@@ -17,160 +17,160 @@
   --border:#e2e8f0;
   --success:#16a34a;
   --danger:#dc2626;
+  --warn:#f59e0b;
 }
+
 *{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Inter,system-ui,Arial;
+  font-family:Inter,system-ui;
   background:linear-gradient(180deg,#eef2ff,#f8fafc);
   color:var(--text);
 }
+
 /* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:18px 28px;
-  background:white;
+  padding:16px 28px;
+  background:#fff;
   border-bottom:1px solid var(--border);
-  position:sticky;
-  top:0;
-  z-index:10;
 }
-.title{font-weight:700}
 .logout{
   background:var(--brand);
-  color:white;
+  color:#fff;
   border:none;
   padding:8px 14px;
   border-radius:8px;
   cursor:pointer;
 }
 
-/* WRAP */
-.wrap{max-width:1200px;margin:auto;padding:25px;}
-
-/* GREETING */
-.greet h2{margin:0}
-.greet p{margin:5px 0 0;color:var(--muted)}
-
-/* GRID */
-.grid{display:grid;gap:18px}
-@media(min-width:1000px){.grid-2{grid-template-columns:1fr 1fr}}
-@media(min-width:1400px){.grid-2{grid-template-columns:1fr 1fr 1fr}}
-
-/* CARD */
+/* LAYOUT */
+.wrap{max-width:1200px;margin:auto;padding:24px;}
 .card{
-  background:var(--card);
+  background:#fff;
   border:1px solid var(--border);
-  border-radius:12px;
+  border-radius:14px;
   padding:16px;
-  overflow:hidden;
+  margin-bottom:16px;
 }
-.card h3{margin-top:0;font-size:16px}
+
+/* FILTERS */
+.filters{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:12px;
+}
+.filters input,.filters select{
+  padding:8px;
+  border-radius:10px;
+  border:1px solid var(--border);
+}
 
 /* ITEM */
 .item{
   border:1px solid var(--border);
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:8px;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:12px;
+}
+.badge{
+  font-size:12px;
+  padding:3px 10px;
+  border-radius:20px;
+}
+.open{background:#fee2e2;color:#991b1b}
+.answered{background:#dcfce7;color:#166534}
+.closed{background:#e5e7eb;color:#374151}
+
+.priority-high{color:var(--danger);font-weight:600}
+.priority-normal{color:#2563eb}
+.priority-low{color:var(--muted)}
+
+.unread-dot{
+  width:8px;height:8px;
+  background:red;border-radius:50%;
+  display:inline-block;margin-right:6px;
+}
+
+/* THREAD */
+.thread{margin-top:10px}
+.msg{
+  padding:8px 10px;
+  border-radius:10px;
+  margin-bottom:6px;
   font-size:14px;
 }
+.user{background:#eef2ff}
+.admin{background:#ecfeff}
 
 /* FORM */
-textarea,input,select{
+textarea,input[type=file]{
   width:100%;
   padding:10px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  margin-top:6px;
-  font-family:inherit;
-}
-button.primary{background:var(--brand);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:8px;}
-button.danger{background:var(--danger);color:white;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;}
-button.small{padding:6px 10px;font-size:13px;}
-
-/* TOAST */
-.toast{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:var(--success);
-  color:white;
-  padding:12px 16px;
   border-radius:10px;
-  box-shadow:0 10px 20px rgba(0,0,0,0.15);
-  opacity:0;
-  transform:translateY(10px);
-  transition:.25s;
+  border:1px solid var(--border);
+  font-family:inherit;
+  margin-top:6px;
 }
-.toast.show{opacity:1;transform:none}
+textarea{resize:none;height:80px}
 
+/* BUTTONS */
+button{
+  border:none;
+  padding:7px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.primary{background:var(--brand);color:white}
+.danger{background:var(--danger);color:white}
+.warn{background:var(--warn);color:white}
+.ghost{background:none;border:1px solid var(--border)}
+
+.loadmore{text-align:center;margin-top:10px}
 .muted{color:var(--muted);font-size:13px}
-.empty{color:var(--muted);font-size:14px}
 </style>
 </head>
 
 <body>
+
 <div class="header">
-  <div class="title">Administration</div>
-  <button class="logout" onclick="logout()">Logout</button>
+  <b>Administration</b>
+  <button class="logout" onclick="auth.signOut()">Logout</button>
 </div>
 
 <div class="wrap">
-  <div class="greet">
-    <h2 id="hello">Welcome 👋</h2>
-    <p>Manage platform activity and client communication.</p>
-  </div>
+  <h2 id="hello">Welcome 👋</h2>
 
-  <div class="grid grid-2">
+  <div class="card">
+    <h3>Inquiries</h3>
 
-    <!-- ANALYTICS -->
-    <div class="card">
-      <h3>Analytics</h3>
-      <div id="stats"></div>
-    </div>
-
-    <!-- POST UPDATE -->
-    <div class="card">
-      <h3>Post Update</h3>
-      <textarea id="up" placeholder="Write announcement"></textarea>
-      <button class="primary" onclick="postUpdate()">Publish</button>
-    </div>
-
-    <!-- FILE UPLOAD -->
-    <div class="card">
-      <h3>Upload File</h3>
-      <input type="file" id="file">
-      <button class="primary" onclick="upload()">Upload</button>
-    </div>
-
-    <!-- USERS -->
-    <div class="card">
-      <h3>Users</h3>
-      <input id="userFilter" placeholder="Search users by name/email">
-      <div id="users"></div>
-    </div>
-
-    <!-- INQUIRIES -->
-    <div class="card" style="grid-column:1/-1">
-      <h3>Inquiries</h3>
-      <select id="inqUserFilter">
-        <option value="">All Users</option>
-      </select>
-      <select id="inqStatusFilter">
-        <option value="">All Status</option>
+    <div class="filters">
+      <input id="search" placeholder="Search">
+      <select id="userFilter"><option value="">All users</option></select>
+      <select id="statusFilter">
+        <option value="">All status</option>
         <option value="open">Open</option>
         <option value="answered">Answered</option>
+        <option value="closed">Closed</option>
       </select>
-      <div id="inq"></div>
+      <select id="priorityFilter">
+        <option value="">All priority</option>
+        <option value="high">High</option>
+        <option value="normal">Normal</option>
+        <option value="low">Low</option>
+      </select>
     </div>
 
+    <div id="list"></div>
+
+    <div class="loadmore">
+      <button class="ghost" onclick="loadMore()">Load more</button>
+    </div>
   </div>
 </div>
-
-<div id="toast" class="toast">Done</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -178,174 +178,165 @@ button.small{padding:6px 10px;font-size:13px;}
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCl6RLrInQotd-GYmJ3VtA4wpAHfFltRUg",
-  authDomain: "page-97b26.firebaseapp.com",
-  projectId: "page-97b26",
-  storageBucket: "page-97b26.firebasestorage.app",
-  messagingSenderId: "268450715801",
-  appId: "1:268450715801:web:33732e0f2fc2a69cfa0008"
-};
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp({
+  apiKey:"AIzaSyCl6RLrInQotd-GYmJ3VtA4wpAHfFltRUg",
+  authDomain:"page-97b26.firebaseapp.com",
+  projectId:"page-97b26",
+  storageBucket:"page-97b26.firebasestorage.app"
+});
 
 const auth=firebase.auth();
 const db=firebase.database();
 const storage=firebase.storage();
 const $=id=>document.getElementById(id);
 
-let myRole="";
-let myName="Admin";
-let usersCache=[], inquiriesCache=[];
+let all=[], users={}, limit=20;
 
 /* AUTH */
 auth.onAuthStateChanged(async u=>{
   if(!u) return location="index.html";
-  myRole=(await db.ref("users/"+u.uid+"/role").once("value")).val();
-  if(myRole==="user") return location="user.html";
-  myName=(await db.ref("users/"+u.uid+"/name").once("value")).val()||"Admin";
-  $("hello").innerText=`Welcome, ${myName} 👋`;
-
-  loadStats();
+  const role=(await db.ref("users/"+u.uid+"/role").once("value")).val();
+  if(role==="user") return location="user.html";
+  const name=(await db.ref("users/"+u.uid+"/name").once("value")).val();
+  $("hello").innerText=`Welcome, ${name||"Admin"} 👋`;
   loadUsers();
   loadInquiries();
 });
 
-/* LOGOUT */
-function logout(){auth.signOut();}
-
-/* TOAST */
-function toast(t="Action completed"){
-  $("toast").innerText=t;
-  $("toast").classList.add("show");
-  setTimeout(()=>$("toast").classList.remove("show"),2500);
+/* USERS */
+function loadUsers(){
+  db.ref("users").on("value",s=>{
+    users={};
+    $("userFilter").innerHTML='<option value="">All users</option>';
+    s.forEach(c=>{
+      users[c.key]=c.val();
+      $("userFilter").innerHTML+=`<option value="${c.key}">
+        ${c.val().name||c.val().email}
+      </option>`;
+    });
+  });
 }
 
-/* ANALYTICS */
-function loadStats(){
-  db.ref("analytics").on("value",s=>{
-    const d=s.val()||{};
-    $("stats").innerHTML=`
-      <div class="item">Users: ${d.usersCount||0}</div>
-      <div class="item">Inquiries: ${d.inquiriesCount||0}</div>
+/* LOAD INQUIRIES */
+function loadInquiries(){
+  db.ref("inquiries").on("value",s=>{
+    all=[];
+    s.forEach(c=>{
+      const d=c.val();
+      const thread = Array.isArray(d.thread)
+        ? d.thread
+        : [
+            {from:"user",text:d.message||"",time:d.createdAt||0},
+            ...(d.response?[{from:"admin",text:d.response,time:d.createdAt||0}]:[])
+          ];
+      all.push({
+        id:c.key,
+        uid:d.uid,
+        status:d.status||"open",
+        priority:d.priority||"normal",
+        unread:d.unreadAdmin!==false,
+        createdAt:d.createdAt||0,
+        thread
+      });
+    });
+    render();
+  });
+
+  ["search","userFilter","statusFilter","priorityFilter"]
+    .forEach(id=>$(id).oninput=render);
+}
+
+/* RENDER */
+function render(){
+  const q=$("search").value.toLowerCase();
+  const u=$("userFilter").value;
+  const st=$("statusFilter").value;
+  const pr=$("priorityFilter").value;
+  $("list").innerHTML="";
+
+  all.filter(i=>{
+    const t=i.thread[0]?.text||"";
+    return (!q||t.toLowerCase().includes(q)) &&
+           (!u||i.uid===u) &&
+           (!st||i.status===st) &&
+           (!pr||i.priority===pr);
+  })
+  .sort((a,b)=>b.createdAt-a.createdAt)
+  .slice(0,limit)
+  .forEach(i=>{
+    $("list").innerHTML+=`
+      <div class="item">
+        ${i.unread?'<span class="unread-dot"></span>':''}
+        <span class="badge ${i.status}">${i.status}</span>
+        <span class="priority-${i.priority}">(${i.priority})</span>
+        <div class="muted">
+          User: ${users[i.uid]?.name||users[i.uid]?.email||i.uid}
+        </div>
+
+        <div class="thread">
+          ${i.thread.map(m=>`
+            <div class="msg ${m.from}">${m.text}</div>
+          `).join("")}
+        </div>
+
+        <textarea id="r${i.id}" placeholder="Reply"></textarea>
+        <input type="file" id="f${i.id}" multiple>
+
+        <button class="primary" onclick="reply('${i.id}','${i.uid}')">Reply</button>
+        <button class="warn" onclick="toggleStatus('${i.id}','${i.status}')">
+          ${i.status==="closed"?"Reopen":"Close"}
+        </button>
+      </div>
     `;
   });
 }
 
-/* POST UPDATE */
-function postUpdate(){
-  const text=$("up").value.trim();
-  if(!text) return;
-  db.ref("updates").push({text,createdAt:Date.now()});
-  $("up").value="";
-  toast("Update published");
-}
+function loadMore(){limit+=20;render();}
 
-/* FILE UPLOAD */
-function upload(){
-  const f=$("file").files[0];
-  if(!f) return;
-  const ref=storage.ref("files/"+Date.now()+"_"+f.name);
-  ref.put(f).then(()=>ref.getDownloadURL()).then(url=>{
-    db.ref("files").push({name:f.name,url,createdAt:Date.now()});
-    toast("File uploaded");
-  });
-}
+/* REPLY */
+async function reply(id,uid){
+  const box=$("r"+id);
+  const files=$("f"+id).files;
+  const text=box.value.trim();
+  if(!text && !files.length) return;
 
-/* USERS */
-function loadUsers(){
-  db.ref("users").on("value",s=>{
-    usersCache=[];
-    $("users").innerHTML="";
-    $("inqUserFilter").innerHTML=`<option value="">All Users</option>`;
-    if(!s.exists()) return $("users").innerHTML='<div class="empty">No users.</div>';
-    s.forEach(c=>{
-      const d=c.val();
-      usersCache.push({id:c.key,...d});
-      $("users").innerHTML+=`
-        <div class="item">
-          <b>${d.name||"No name"}</b>
-          <div class="muted">${d.email}</div>
-          <select ${myRole!=="superadmin"?"disabled":""} onchange="role('${c.key}',this.value)">
-            <option ${d.role==="user"?"selected":""}>user</option>
-            <option ${d.role==="admin"?"selected":""}>admin</option>
-            <option ${d.role==="superadmin"?"selected":""}>superadmin</option>
-          </select>
-          <div style="margin-top:8px">
-            <button class="primary small" onclick="notify('${c.key}')">Notify</button>
-            ${myRole==="superadmin"? `<button class="danger small" onclick="delUser('${c.key}')">Delete</button>`:``}
-          </div>
-        </div>`;
-      $("inqUserFilter").innerHTML+=`<option value="${c.key}">${d.name||d.email}</option>`;
-    });
+  const snap=await db.ref("inquiries/"+id).once("value");
+  const d=snap.val();
+  let thread = Array.isArray(d.thread)
+    ? d.thread
+    : [{from:"user",text:d.message||"",time:d.createdAt||0}];
+
+  const uploaded=[];
+  for(const f of files){
+    const r=storage.ref(`admin/${id}/${Date.now()}_${f.name}`);
+    await r.put(f);
+    uploaded.push({name:f.name,url:await r.getDownloadURL()});
+  }
+
+  thread.push({from:"admin",text,files:uploaded,time:Date.now()});
+
+  await db.ref("inquiries/"+id).update({
+    thread,
+    status:"answered",
+    unreadAdmin:false,
+    unreadUser:true
   });
 
-  $("userFilter").addEventListener("input",()=>renderUsers($("userFilter").value.toLowerCase()));
-}
-
-function renderUsers(q=""){
-  $("users").innerHTML="";
-  usersCache.forEach(d=>{
-    if(!q || d.name.toLowerCase().includes(q)||d.email.toLowerCase().includes(q)){
-      $("users").innerHTML+=`
-        <div class="item">
-          <b>${d.name||"No name"}</b>
-          <div class="muted">${d.email}</div>
-          <select ${myRole!=="superadmin"?"disabled":""} onchange="role('${d.id}',this.value)">
-            <option ${d.role==="user"?"selected":""}>user</option>
-            <option ${d.role==="admin"?"selected":""}>admin</option>
-            <option ${d.role==="superadmin"?"selected":""}>superadmin</option>
-          </select>
-          <div style="margin-top:8px">
-            <button class="primary small" onclick="notify('${d.id}')">Notify</button>
-            ${myRole==="superadmin"? `<button class="danger small" onclick="delUser('${d.id}')">Delete</button>`:``}
-          </div>
-        </div>`;
-    }
-  });
-}
-
-/* USER ACTIONS */
-function role(uid,r){ if(myRole!=="superadmin") return; db.ref("users/"+uid+"/role").set(r); toast("Role updated"); }
-function delUser(uid){ if(myRole!=="superadmin") return; if(!confirm("Delete this user and data?")) return; db.ref("users/"+uid).remove(); db.ref("inquiries").once("value",s=>{s.forEach(c=>{if(c.val().uid===uid) db.ref("inquiries/"+c.key).remove();});}); toast("User removed"); }
-function notify(uid){ const text=prompt("Notification message"); if(!text) return; db.ref("notifications/"+uid).push({text,createdAt:Date.now()}); toast("User notified"); }
-
-/* INQUIRIES */
-function loadInquiries(){
-  db.ref("inquiries").on("value",s=>{
-    inquiriesCache=[];
-    s.forEach(c=>inquiriesCache.push({...c.val(),id:c.key}));
-    renderInquiries();
+  db.ref("notifications/"+uid).push({
+    text:"Admin replied to your inquiry",
+    createdAt:Date.now()
   });
 
-  $("inqUserFilter").addEventListener("change",renderInquiries);
-  $("inqStatusFilter").addEventListener("change",renderInquiries);
+  box.value="";
 }
 
-function renderInquiries(){
-  const uid=$("inqUserFilter").value;
-  const status=$("inqStatusFilter").value;
-  $("inq").innerHTML="";
-  const filtered=inquiriesCache.filter(i=>{
-    return (!uid || i.uid===uid) && (!status || i.status===status);
+/* STATUS */
+function toggleStatus(id,s){
+  db.ref("inquiries/"+id).update({
+    status:s==="closed"?"open":"closed"
   });
-  if(!filtered.length) return $("inq").innerHTML='<div class="empty">No inquiries.</div>';
-  filtered.forEach(d=>{
-    $("inq").innerHTML+=`
-      <div class="item">
-        <b>${d.message}</b>
-        <div class="muted">Status: ${d.status||"open"}</div>
-        <textarea id="r${d.id}" placeholder="Write reply">${d.response||""}</textarea>
-        <button class="primary small" onclick="reply('${d.id}','${d.uid}')">Send Reply</button>
-      </div>`;
-  });
-}
-
-function reply(id,uid){
-  const v=document.getElementById("r"+id).value;
-  db.ref("inquiries/"+id).update({response:v,status:"answered"});
-  db.ref("notifications/"+uid).push({text:"Your inquiry has been answered.",createdAt:Date.now()});
-  toast("Reply sent & user alerted");
 }
 </script>
+
 </body>
 </html>
