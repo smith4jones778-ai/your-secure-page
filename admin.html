@@ -28,7 +28,6 @@ body{
   color:var(--text);
 }
 
-/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
@@ -46,7 +45,6 @@ body{
   cursor:pointer;
 }
 
-/* LAYOUT */
 .wrap{max-width:1200px;margin:auto;padding:24px;}
 .card{
   background:#fff;
@@ -56,7 +54,6 @@ body{
   margin-bottom:16px;
 }
 
-/* FILTERS */
 .filters{
   display:flex;
   flex-wrap:wrap;
@@ -69,12 +66,11 @@ body{
   border:1px solid var(--border);
 }
 
-/* ITEM */
 .item{
   border:1px solid var(--border);
   border-radius:12px;
   padding:14px;
-  margin-bottom:12px;
+  margin-bottom:14px;
 }
 .badge{
   font-size:12px;
@@ -95,7 +91,6 @@ body{
   display:inline-block;margin-right:6px;
 }
 
-/* THREAD */
 .thread{margin-top:10px}
 .msg{
   padding:8px 10px;
@@ -106,7 +101,6 @@ body{
 .user{background:#eef2ff}
 .admin{background:#ecfeff}
 
-/* FORM */
 textarea,input[type=file]{
   width:100%;
   padding:10px;
@@ -117,7 +111,6 @@ textarea,input[type=file]{
 }
 textarea{resize:none;height:80px}
 
-/* BUTTONS */
 button{
   border:none;
   padding:7px 12px;
@@ -125,11 +118,9 @@ button{
   cursor:pointer;
 }
 .primary{background:var(--brand);color:white}
-.danger{background:var(--danger);color:white}
 .warn{background:var(--warn);color:white}
 .ghost{background:none;border:1px solid var(--border)}
 
-.loadmore{text-align:center;margin-top:10px}
 .muted{color:var(--muted);font-size:13px}
 </style>
 </head>
@@ -148,7 +139,7 @@ button{
     <h3>Inquiries</h3>
 
     <div class="filters">
-      <input id="search" placeholder="Search">
+      <input id="search" placeholder="Search messages">
       <select id="userFilter"><option value="">All users</option></select>
       <select id="statusFilter">
         <option value="">All status</option>
@@ -165,10 +156,6 @@ button{
     </div>
 
     <div id="list"></div>
-
-    <div class="loadmore">
-      <button class="ghost" onclick="loadMore()">Load more</button>
-    </div>
   </div>
 </div>
 
@@ -207,12 +194,13 @@ auth.onAuthStateChanged(async u=>{
 function loadUsers(){
   db.ref("users").on("value",s=>{
     users={};
-    $("userFilter").innerHTML='<option value="">All users</option>';
+    userFilter.innerHTML='<option value="">All users</option>';
     s.forEach(c=>{
       users[c.key]=c.val();
-      $("userFilter").innerHTML+=`<option value="${c.key}">
-        ${c.val().name||c.val().email}
-      </option>`;
+      userFilter.innerHTML+=`
+        <option value="${c.key}">
+          ${c.val().name||c.val().email}
+        </option>`;
     });
   });
 }
@@ -225,10 +213,8 @@ function loadInquiries(){
       const d=c.val();
       const thread = Array.isArray(d.thread)
         ? d.thread
-        : [
-            {from:"user",text:d.message||"",time:d.createdAt||0},
-            ...(d.response?[{from:"admin",text:d.response,time:d.createdAt||0}]:[])
-          ];
+        : [{from:"user",text:d.message||"",time:d.createdAt||0}];
+
       all.push({
         id:c.key,
         uid:d.uid,
@@ -236,6 +222,7 @@ function loadInquiries(){
         priority:d.priority||"normal",
         unread:d.unreadAdmin!==false,
         createdAt:d.createdAt||0,
+        lastUpdated:d.lastUpdated||d.createdAt||0,
         thread
       });
     });
@@ -248,23 +235,23 @@ function loadInquiries(){
 
 /* RENDER */
 function render(){
-  const q=$("search").value.toLowerCase();
-  const u=$("userFilter").value;
-  const st=$("statusFilter").value;
-  const pr=$("priorityFilter").value;
-  $("list").innerHTML="";
+  const q=search.value.toLowerCase();
+  const u=userFilter.value;
+  const st=statusFilter.value;
+  const pr=priorityFilter.value;
+  list.innerHTML="";
 
   all.filter(i=>{
-    const t=i.thread[0]?.text||"";
-    return (!q||t.toLowerCase().includes(q)) &&
+    const content=i.thread.map(m=>m.text).join(" ").toLowerCase();
+    return (!q||content.includes(q)) &&
            (!u||i.uid===u) &&
            (!st||i.status===st) &&
            (!pr||i.priority===pr);
   })
-  .sort((a,b)=>b.createdAt-a.createdAt)
+  .sort((a,b)=>b.lastUpdated-a.lastUpdated)
   .slice(0,limit)
   .forEach(i=>{
-    $("list").innerHTML+=`
+    list.innerHTML+=`
       <div class="item">
         ${i.unread?'<span class="unread-dot"></span>':''}
         <span class="badge ${i.status}">${i.status}</span>
@@ -275,7 +262,10 @@ function render(){
 
         <div class="thread">
           ${i.thread.map(m=>`
-            <div class="msg ${m.from}">${m.text}</div>
+            <div class="msg ${m.from}">
+              ${m.text}
+              <div class="muted">${new Date(m.time).toLocaleString()}</div>
+            </div>
           `).join("")}
         </div>
 
@@ -291,8 +281,6 @@ function render(){
   });
 }
 
-function loadMore(){limit+=20;render();}
-
 /* REPLY */
 async function reply(id,uid){
   const box=$("r"+id);
@@ -302,9 +290,7 @@ async function reply(id,uid){
 
   const snap=await db.ref("inquiries/"+id).once("value");
   const d=snap.val();
-  let thread = Array.isArray(d.thread)
-    ? d.thread
-    : [{from:"user",text:d.message||"",time:d.createdAt||0}];
+  const thread = Array.isArray(d.thread) ? d.thread : [];
 
   const uploaded=[];
   for(const f of files){
@@ -319,7 +305,8 @@ async function reply(id,uid){
     thread,
     status:"answered",
     unreadAdmin:false,
-    unreadUser:true
+    unreadUser:true,
+    lastUpdated:Date.now()
   });
 
   db.ref("notifications/"+uid).push({
@@ -333,7 +320,8 @@ async function reply(id,uid){
 /* STATUS */
 function toggleStatus(id,s){
   db.ref("inquiries/"+id).update({
-    status:s==="closed"?"open":"closed"
+    status:s==="closed"?"open":"closed",
+    lastUpdated:Date.now()
   });
 }
 </script>
