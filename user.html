@@ -15,7 +15,6 @@
   --text:#0f172a;
   --muted:#64748b;
   --border:#e2e8f0;
-  --success:#16a34a;
 }
 
 *{box-sizing:border-box}
@@ -72,11 +71,10 @@ button.ghost{
 
 /* CARD */
 .card{
-  background:var(--card);
+  background:#fff;
   border:1px solid var(--border);
   border-radius:14px;
   padding:16px;
-  margin-bottom:16px;
 }
 
 /* FILTERS */
@@ -91,12 +89,12 @@ button.ghost{
   border:1px solid var(--border);
 }
 
-/* INQUIRY ITEM */
+/* INQUIRY */
 .item{
   border:1px solid var(--border);
   border-radius:12px;
   padding:14px;
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
 .badge{
   font-size:12px;
@@ -116,6 +114,14 @@ button.ghost{
 }
 .user{background:#eef2ff}
 .admin{background:#ecfeff}
+
+/* REPLY */
+.replybox{
+  margin-top:8px;
+}
+.replybox textarea{
+  height:70px;
+}
 
 /* MODAL */
 .modal{
@@ -144,11 +150,7 @@ textarea,input{
   font-family:inherit;
   margin-bottom:10px;
 }
-textarea{height:90px;resize:none}
-
-/* MISC */
-.empty{color:var(--muted);text-align:center;padding:20px}
-.loadmore{text-align:center;margin-top:10px}
+.empty{text-align:center;color:#64748b;padding:20px}
 </style>
 </head>
 
@@ -170,18 +172,19 @@ textarea{height:90px;resize:none}
     <h3>My Inquiries</h3>
 
     <div class="filters">
-      <input id="search" placeholder="Search">
+      <input id="search" placeholder="Search messages">
       <select id="status">
         <option value="">All</option>
         <option value="open">Open</option>
         <option value="answered">Answered</option>
       </select>
+      <select id="sort">
+        <option value="updated">Recently updated</option>
+        <option value="created">Newest</option>
+      </select>
     </div>
 
     <div id="list"></div>
-    <div class="loadmore">
-      <button class="ghost" onclick="loadMore()">Load more</button>
-    </div>
   </div>
 
 </div>
@@ -191,7 +194,6 @@ textarea{height:90px;resize:none}
   <div class="modal-content">
     <h3>New Inquiry</h3>
     <textarea id="msg" placeholder="Describe your issue"></textarea>
-    <input type="file" id="files" multiple>
     <button class="primary" onclick="send()">Send</button>
     <button class="ghost" onclick="closeModal()">Cancel</button>
   </div>
@@ -200,22 +202,19 @@ textarea{height:90px;resize:none}
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyCl6RLrInQotd-GYmJ3VtA4wpAHfFltRUg",
   authDomain:"page-97b26.firebaseapp.com",
-  projectId:"page-97b26",
-  storageBucket:"page-97b26.firebasestorage.app"
+  projectId:"page-97b26"
 });
 
 const auth=firebase.auth();
 const db=firebase.database();
-const storage=firebase.storage();
 const $=id=>document.getElementById(id);
 
-let uid=null, all=[], limit=5;
+let uid=null, all=[];
 
 /* AUTH */
 auth.onAuthStateChanged(async u=>{
@@ -225,10 +224,6 @@ auth.onAuthStateChanged(async u=>{
   $("hello").innerText=`Welcome, ${name||"User"} 👋`;
   load();
 });
-
-/* MODAL */
-const openModal=()=>$("modal").classList.add("show");
-const closeModal=()=>$("modal").classList.remove("show");
 
 /* LOAD */
 function load(){
@@ -246,67 +241,106 @@ function load(){
 function render(){
   const q=$("search").value.toLowerCase();
   const st=$("status").value;
+  const sort=$("sort").value;
   $("list").innerHTML="";
 
-  const filtered=all
-    .filter(i=>{
-      const t=i.thread?.[0]?.text||i.message||"";
-      return (!q||t.toLowerCase().includes(q)) && (!st||i.status===st);
-    })
-    .sort((a,b)=>b.createdAt-a.createdAt)
-    .slice(0,limit);
+  let items = all.filter(i=>{
+    const content=i.thread.map(m=>m.text).join(" ").toLowerCase();
+    return (!q||content.includes(q)) && (!st||i.status===st);
+  });
 
-  if(!filtered.length)
+  items.sort((a,b)=>{
+    return sort==="updated"
+      ? (b.lastUpdated||b.createdAt)-(a.lastUpdated||a.createdAt)
+      : b.createdAt-a.createdAt;
+  });
+
+  if(!items.length)
     return $("list").innerHTML='<div class="empty">No inquiries</div>';
 
-  filtered.forEach(i=>{
-    const thread=Array.isArray(i.thread)?i.thread:[
-      {from:"user",text:i.message||"",files:[]},
-      ...(i.response?[{from:"admin",text:i.response,files:[]}]:[])
-    ];
-
+  items.forEach(i=>{
     $("list").innerHTML+=`
       <div class="item">
-        <span class="badge ${i.status||"open"}">${i.status||"open"}</span>
+        <div style="display:flex;justify-content:space-between">
+          <b>Inquiry</b>
+          <span class="badge ${i.status}">${i.status}</span>
+        </div>
+
         <div class="thread">
-          ${thread.map(m=>`
-            <div class="msg ${m.from}">${m.text}</div>
+          ${i.thread.map(m=>`
+            <div class="msg ${m.from}">
+              ${m.text}
+              <div style="font-size:11px;color:#64748b">
+                ${new Date(m.time).toLocaleString()}
+              </div>
+            </div>
           `).join("")}
+        </div>
+
+        <div class="replybox">
+          <textarea id="reply-${i.id}" placeholder="Reply..."></textarea>
+          <button class="ghost" onclick="reply('${i.id}')">Send reply</button>
         </div>
       </div>
     `;
   });
 }
 
-$("search").oninput=render;
-$("status").onchange=render;
-const loadMore=()=>{limit+=5;render();};
+/* FILTER EVENTS */
+search.oninput=render;
+status.onchange=render;
+sort.onchange=render;
 
-/* SEND */
+/* NEW INQUIRY */
 async function send(){
   const text=$("msg").value.trim();
   if(!text) return;
 
-  const ref=db.ref("inquiries").push();
-  const uploads=[];
-  for(const f of $("files").files){
-    const r=storage.ref(`inquiries/${uid}/${Date.now()}_${f.name}`);
-    await r.put(f);
-    uploads.push({name:f.name,url:await r.getDownloadURL()});
-  }
-
-  await ref.set({
+  await db.ref("inquiries").push({
     uid,
     status:"open",
     createdAt:Date.now(),
-    thread:[{from:"user",text,files:uploads}]
+    lastUpdated:Date.now(),
+    thread:[{
+      from:"user",
+      text,
+      time:Date.now()
+    }]
   });
 
   $("msg").value="";
-  $("files").value="";
   closeModal();
 }
-function logout(){auth.signOut();}
+
+/* REPLY */
+async function reply(id){
+  const box=document.getElementById(`reply-${id}`);
+  const text=box.value.trim();
+  if(!text) return;
+
+  const ref=db.ref("inquiries/"+id);
+  const snap=await ref.once("value");
+  const data=snap.val();
+
+  data.thread.push({
+    from:"user",
+    text,
+    time:Date.now()
+  });
+
+  await ref.update({
+    thread:data.thread,
+    status:"open",
+    lastUpdated:Date.now()
+  });
+
+  box.value="";
+}
+
+/* MODAL */
+const openModal=()=>modal.classList.add("show");
+const closeModal=()=>modal.classList.remove("show");
+const logout=()=>auth.signOut();
 </script>
 
 </body>
